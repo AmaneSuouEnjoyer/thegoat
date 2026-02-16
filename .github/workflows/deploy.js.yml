@@ -1,5 +1,3 @@
-name: Build and Deploy
-
 on:
   push:
     branches: [ "main" ]
@@ -21,23 +19,23 @@ jobs:
         node-version: [20.x]
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        node-version: 20.x
+        cache: npm
         cache-dependency-path: "./open-source-election-game/package-lock.json"
     - name: Install dependencies
       working-directory: ./open-source-election-game
       run: npm install
     - name: Build
       working-directory: ./open-source-election-game
-      run: npm run build --if-present
+      run: npm run build
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: './open-source-election-game/dist'
-    
+
   deploy:
     environment:
       name: github-pages
@@ -48,10 +46,3 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
-```
-
-Replace your `.github/workflows/deploy.yml` with this, then:
-```
-git add .github/workflows/deploy.yml
-git commit -m "Add environment to GitHub Pages deployment"
-git push
