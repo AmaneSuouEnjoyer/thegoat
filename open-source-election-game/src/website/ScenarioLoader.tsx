@@ -7,60 +7,60 @@ import "./ScenarioLoader.css";
 const scenarioNames = ["1980 For Common Sense", "1964 The Beatles", "1960m", "The Goat"];
 
 function ScenarioLoader() {
-
-    const [currentModName, setCurrentModName] = useState("");
+    const [currentModName, setCurrentModName] = useState("The Goat");
     const [data, setData] = useState<ScenarioModel | null>(null);
     const [logic, setLogic] = useState<string>("");
     const [mapSvg, setMapSvg] = useState<string>("");
     const [customCss, setCustomCss] = useState<string>("");
-
     const [dataString, setDataString] = useState<string>("");
     const [loadingCustomScenario, setLoadingCustomScenario] = useState(false);
-
     const [scenarios, setScenarios] = useState<Map<string, ScenarioModel>>(new Map());
   
     useEffect(() => {
         async function loadScenarios() {
-
             const newScenarios = new Map<string, ScenarioModel>();
-
             for(const scenarioName of scenarioNames) {
-                const modelRes = await fetch("./scenarios/" + scenarioName + "/data.json");
-                const model : ScenarioModel = await modelRes.json();
-                newScenarios.set(scenarioName, model);
+                try {
+                    const modelRes = await fetch("./scenarios/" + scenarioName + "/data.json");
+                    const model : ScenarioModel = await modelRes.json();
+                    newScenarios.set(scenarioName, model);
+                } catch(e) {
+                    console.error("Failed to load scenario: " + scenarioName, e);
+                }
             }
-
             setScenarios(newScenarios);
         }
-
         loadScenarios();
     }, []);
 
     useEffect(() => {
-		setCurrentModName("The Goat");
-      if(currentModName == "") {
-        return;
-      }
+        if(currentModName == "") {
+            return;
+        }
 
-      async function loadScenarioFromUrl(modFolderName : string) {
-        const dataRes = await fetch("./scenarios/" + modFolderName + "/data.json");
-        const dataJson = await dataRes.json();
+        async function loadScenarioFromUrl(modFolderName : string) {
+            try {
+                const dataRes = await fetch("./scenarios/" + modFolderName + "/data.json");
+                const dataJson = await dataRes.json();
 
-        const mapRes = await fetch("./scenarios/" + modFolderName + "/map.svg");
-        const map: string = await mapRes.text();
-      
-        const logicRes = await fetch("./scenarios/" + modFolderName + "/logic.js");
-        const logicText = await logicRes.text();
+                const mapRes = await fetch("./scenarios/" + modFolderName + "/map.svg");
+                const map: string = await mapRes.text();
+              
+                const logicRes = await fetch("./scenarios/" + modFolderName + "/logic.js");
+                const logicText = await logicRes.text();
 
-        const cssRes = await fetch("./scenarios/" + modFolderName + "/style.css");
-        const cssText = await cssRes.text();
-        
-        setData(dataJson);
-        setLogic(logicText);
-        setMapSvg(map);
-        setCustomCss(cssText);
-      }
-      loadScenarioFromUrl(currentModName);
+                const cssRes = await fetch("./scenarios/" + modFolderName + "/style.css");
+                const cssText = await cssRes.text();
+                
+                setData(dataJson);
+                setLogic(logicText);
+                setMapSvg(map);
+                setCustomCss(cssText);
+            } catch(e) {
+                console.error("Failed to load scenario files", e);
+            }
+        }
+        loadScenarioFromUrl(currentModName);
     }, [currentModName]);
 
     function loadCustomScenario() {
@@ -101,7 +101,6 @@ function ScenarioLoader() {
                     <label htmlFor="map">map.svg</label>
                     <textarea rows={8} onChange={(e) => setMapSvg(e.target.value)} value={mapSvg} id="map"></textarea>
 
-                    
                     <label htmlFor="css">style.css</label>
                     <textarea rows={8} onChange={(e) => setCustomCss(e.target.value)} value={customCss} id="css"></textarea>
 
@@ -109,10 +108,10 @@ function ScenarioLoader() {
                 </div>
             </div>
         )
-        }
+    }
 
     if(data == null) {
-        return <p>Error: Injected data is null</p>
+        return <p>Error: Loading scenario...</p>
     }
 
     return <Game onAchievementUnlocked={null} onGameOver={null} onStartButtonPressed={null} injectedCss={customCss} injectedData={data} injectedLogic={logic} injectedMapSvg={mapSvg}></Game>
