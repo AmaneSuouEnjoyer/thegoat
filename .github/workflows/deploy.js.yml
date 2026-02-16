@@ -37,6 +37,21 @@ jobs:
       uses: actions/upload-pages-artifact@v3
       with:
         path: './open-source-election-game/dist'
+    
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+```
+
+Replace your `.github/workflows/deploy.yml` with this, then:
+```
+git add .github/workflows/deploy.yml
+git commit -m "Add environment to GitHub Pages deployment"
+git push
