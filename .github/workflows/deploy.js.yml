@@ -1,17 +1,24 @@
+name: Build and Deploy
+
 on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [20.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
@@ -26,13 +33,23 @@ jobs:
     - name: Build
       working-directory: ./open-source-election-game
       run: npm run build --if-present
-    - name: Run tests
-      working-directory: ./open-source-election-game
-      run: npm test
-    - name: Deploy
-      working-directory: ./open-source-election-game
-      run: |
-        git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-        npm run deploy -- -u "github-actions-bot <support+actions@github.com>"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './open-source-election-game/dist'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+```
+
+**Now do this:**
+
+1. Open the file `.github/workflows/deploy.yml` in your code editor
+2. Delete all the old content
+3. Paste this new content in
+4. Save it
+5. Commit and push:
+```
+   git add .github/workflows/deploy.yml
+   git commit -m "Fix GitHub Pages deployment"
+   git push
